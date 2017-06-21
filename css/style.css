@@ -1,6 +1,9 @@
 [v-cloak]{
     display: none;
 }
+.title{
+    padding: 20px;
+}
 .submit-comment{
     height: 250px;
     width: 800px;

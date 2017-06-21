@@ -8,7 +8,10 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="container">
+    <div class="container title">
+        <h1 class="text-center text-primary">Vue2.0+PHP留言墙</h1>
+    </div>
+    <div class="container" id="app">
         <div class="row submit-comment">
             <textarea name="content" id=""  rows="10" v-model="content"></textarea>
             <div class="submit-comment-action">
@@ -19,14 +22,14 @@
         <div class="comment-list">
             <div class="nomess text-muted" v-show="msgData.length==0"><h5>暂无留言</h5></div>
             <div class="messlist">
-                <div class="reply" v-for="item in msgData" v-cloak>
+                <div class="reply" v-for="(item,index) in msgData" v-cloak>
                     <p class="replyContent">{{item.content}}</p>
                     <p class="operation">
                         <span class="time">{{item.time}}</span>
                         <span class="handle">
-                            <a href="javascript:;" class="fa fa-thumbs-o-up">{{item.acc}}</a>
-                            <a href="javascript:;" class="text-danger fa fa-thumbs-o-down">{{item.ref}}</a>
-                            <a href="javascript:;" class="fa fa-trash"></a>
+                            <a href="javascript:;" class="fa fa-thumbs-o-up" @click="top(item.id,index)">{{item.acc}}</a>
+                            <a href="javascript:;" class="text-danger fa fa-thumbs-o-down" @click="down(item.id,index)">{{item.ref}}</a>
+                            <a href="javascript:;" class="fa fa-trash" @click="del(item.id,index)"></a>
                         </span>
                     </p>
                 </div>
@@ -46,8 +49,9 @@
 <script src="js/vue-resource.js"></script>
 <script>
     window.onload=function () {
+        var URL='weibo.php';
         new Vue({
-            el:'.container',
+            el:'#app',
             data:{
                 content:'',
                 msgData:[]
@@ -55,7 +59,7 @@
             methods:{
                 add:function () {
                     this.$http({
-                        url:'weibo.php',
+                        url:URL,
                         data:{//给后台发送的数据
                             act:'add',
                             content:this.content
@@ -77,7 +81,7 @@
                 },
                 getPageData:function (n) {
                     this.$http({
-                        url:'weibo.php',
+                        url:URL,
                         data:{
                             act:'get',
                             page:n
@@ -95,6 +99,41 @@
                             });
                         }
                     });
+                },
+                top:function (id,index) {
+                    this.$http({
+                        url:URL,
+                        data:{
+                            act:'acc',
+                            id:id
+                        }
+                    }).then(function () {
+                        this.msgData[index].acc=this.msgData[index].acc+1;
+                    });
+                },
+                down:function (id,index) {
+                    this.$http({
+                       url:URL,
+                        data:{
+                           act:'ref',
+                           id:id
+                        }
+                    }).then(function () {
+                        this.msgData[index].ref=this.msgData[index].ref+1;
+                    });
+                },
+                del:function (id,index) {
+                  this.$http({
+                      url:URL,
+                      data:{
+                          act:'del',
+                          id:id
+                      }
+                  }).then(function () {
+                      alert('删除成功');
+                      //alert(this.msgData[index].content);
+                      this.msgData.splice(index,1);
+                  });
                 }
             },
             created:function () {
