@@ -29,7 +29,7 @@
                         <span class="handle">
                             <a href="javascript:;" class="fa fa-thumbs-o-up" @click="top(item.id,index)">{{item.acc}}</a>
                             <a href="javascript:;" class="text-danger fa fa-thumbs-o-down" @click="down(item.id,index)">{{item.ref}}</a>
-                            <a href="javascript:;" class="fa fa-trash" @click="del(item.id,index)"></a>
+                            <a href="javascript:;" class="fa fa-trash" @click="nowIndex=index" data-toggle="modal" data-target="#modal"></a>
                         </span>
                     </p>
                 </div>
@@ -42,7 +42,25 @@
                 </ul>
             </div>
         </div>
+        <div class="modal fade" id="modal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="text-primary">删除</h5>
+                        <button type="button" class="close" data-dismiss="modal" > <span aria-hidden="true">&times;</span></button>
+                    </div>
+                    <div class="modal-body text-warning">
+                        确定要删除这条留言吗
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-danger" @click="del(nowIndex)" data-dismiss="modal">确定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
 <script src="js/jquery-3.2.1.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
 <script src="js/vue.js"></script>
@@ -54,7 +72,8 @@
             el:'#app',
             data:{
                 content:'',
-                msgData:[]
+                msgData:[],
+                nowIndex:-100
             },
             methods:{
                 add:function () {
@@ -122,18 +141,17 @@
                         this.msgData[index].ref=this.msgData[index].ref+1;
                     });
                 },
-                del:function (id,index) {
-                  this.$http({
-                      url:URL,
-                      data:{
-                          act:'del',
-                          id:id
-                      }
-                  }).then(function () {
-                      alert('删除成功');
-                      //alert(this.msgData[index].content);
-                      this.msgData.splice(index,1);
-                  });
+                del:function (nowIndex) {
+                    //alert(this.msgData[nowIndex].id);
+                    this.$http({
+                        url:URL,
+                        data:{
+                            act:'del',
+                            id:this.msgData[nowIndex].id
+                        }
+                    }).then(function () {
+                        this.msgData.splice(nowIndex,1);
+                    });
                 }
             },
             created:function () {
