@@ -23,52 +23,93 @@
 	注意：	服务器所返回的时间戳都是秒（JS是毫秒）
 **********************************************
 */
-$conn=mysqli_connect('localhost','root','root','test','3306');
-mysqli_query($conn,"set names 'utf8'");
-$sql= "CREATE TABLE  weibo (
-ID INT(6) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
-content TEXT NOT NULL ,
-time VARCHAR(30) NOT NULL ,
-acc INT(8) NOT NULL ,
-ref INT(8) NOT NULL
-) CHARACTER SET utf8 COLLATE utf8_general_ci";
 
+//创建数据库之类的
+$db=@mysql_connect('localhost', 'root', 'miffy1314') or @mysql_connect('localhost', 'root', 'miffy1314');
 
+mysql_query("set names 'utf8'");
+mysql_query('CREATE DATABASE zns_ajax');
 
-//接口开始
+mysql_select_db('zns_ajax');
+
+$sql= <<< END
+CREATE TABLE  `zns_ajax`.`weibo` (
+`ID` INT NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+`content` TEXT NOT NULL ,
+`time` VARCHAR NOT NULL ,
+`acc` INT NOT NULL ,
+`ref` INT NOT NULL
+) CHARACTER SET utf8 COLLATE utf8_general_ci
+END;
+
+mysql_query($sql);
+
+//正式开始
+
+//header('Content-type:zns/json');
+
 $act=$_GET['act'];
 $PAGE_SIZE=6;
-switch ($act){
+
+switch($act)
+{
 	case 'add':
-		$content=urldecode($_GET['content']);//将编码的中文还原
-		$time=date("Y-m-d H:i:s",time());//将时间戳变换成所需格式
+		$content=urldecode($_GET['content']);
+//		$time=time();
+        $time=date("Y-m-d H:i:s",time());
 		$content=str_replace("\n", "", $content);
-		//将消息插入数据库
+		
 		$sql="INSERT INTO weibo (ID, content, time, acc, ref) VALUES(0, '{$content}', '{$time}', 0, 0)";
-		mysqli_query($conn,$sql);
-		//返回插入的数据
-		$res=mysqli_query($conn,'SELECT LAST_INSERT_ID()');
-		$row=mysqli_fetch_array($res,MYSQLI_BOTH);
+		
+		mysql_query($sql);
+		
+		$res=mysql_query('SELECT LAST_INSERT_ID()');
+		
+		$row=mysql_fetch_array($res);
+		
 		$id=(int)$row[0];
-		$data = array('error'=>0,'id'=>$id,'time'=>$time); //【关联数组】
-		echo json_encode($data);
+		
+//		echo "{\"error\": 0, \"id\": {$id}, \"time\": ''{$time}''}";
+        header('Content-type:text/json');
+//        echo "{\"error\": 0, \"id\": {$id}, \"time\": {$time}}";
+        $data = array('error'=>0,'id'=>$id,'time'=>$time); //【关联数组】
+        echo json_encode($data);
+		break;
+	case 'get_page_count':
+		$sql="SELECT COUNT(*)/{$PAGE_SIZE}+1 FROM weibo";
+		
+		mysql_query($sql);
+		
+		$res=mysql_query($sql);
+		
+		$row=mysql_fetch_array($res);
+		
+		$count=(int)$row[0];
+		
+		echo "{\"count\": {$count}}";
 		break;
 	case 'get':
 		$page=(int)$_GET['page'];
 		if($page<1)$page=1;
+		
 		$s=($page-1)*$PAGE_SIZE;
+		
 		$sql="SELECT ID, content, time, acc, ref FROM weibo ORDER BY time DESC LIMIT {$s}, {$PAGE_SIZE}";
-		$res=mysqli_query($conn,$sql);
-		$aResult=array();//存放数据
-		while($row=mysqli_fetch_array($res,MYSQLI_BOTH))
+		
+		$res=mysql_query($sql);
+		
+		$aResult=array();
+		while($row=mysql_fetch_array($res))
 		{
 			$arr=array();
 			array_push($arr, '"id":'.$row[0]);
 			array_push($arr, '"content":"'.$row[1].'"');
+//			array_push($arr, '"time":"'.date("Y-m-d H:i:s",time()).'"');
 			array_push($arr, '"time":"'.$row[2].'"');
 			array_push($arr, '"acc":'.$row[3]);
 			array_push($arr, '"ref":'.$row[4]);
-			array_push($aResult, implode(',', $arr));//implode() 函数返回由数组元素组合成的字符串。
+
+			array_push($aResult, implode(',', $arr));
 		}
 		if(count($aResult)>0)
 		{
@@ -81,28 +122,40 @@ switch ($act){
 		break;
 	case 'acc':
 		$id=(int)$_GET['id'];
-		$res=mysqli_query($conn,"SELECT acc FROM weibo WHERE ID={$id}");
-		$row=mysqli_fetch_array($res,MYSQLI_BOTH);
+		
+		$res=mysql_query("SELECT acc FROM weibo WHERE ID={$id}");
+		
+		$row=mysql_fetch_array($res);
+		
 		$old=(int)$row[0]+1;
+		
 		$sql="UPDATE weibo SET acc={$old} WHERE ID={$id}";
-		mysqli_query($conn,$sql);
+		
+		mysql_query($sql);
+		
 		echo '{"error":0}';
 		break;
 	case 'ref':
 		$id=(int)$_GET['id'];
-		$res=mysqli_query($conn,"SELECT ref FROM weibo WHERE ID={$id}");
-		$row=mysqli_fetch_array($res,MYSQLI_BOTH);
+		
+		$res=mysql_query("SELECT ref FROM weibo WHERE ID={$id}");
+		
+		$row=mysql_fetch_array($res);
+		
 		$old=(int)$row[0]+1;
+		
 		$sql="UPDATE weibo SET ref={$old} WHERE ID={$id}";
-		mysqli_query($conn,$sql);
+		
+		mysql_query($sql);
+		
 		echo '{"error":0}';
 		break;
 	case 'del':
 		$id=(int)$_GET['id'];
 		$sql="DELETE FROM weibo WHERE ID={$id}";
-		mysqli_query($conn,$sql);
+		//echo $sql;exit;
+		mysql_query($sql);
 		echo '{"error":0}';
 		break;
 }
-		
 ?>
