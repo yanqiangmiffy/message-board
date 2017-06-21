@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>欢迎留言</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <style>
+        [v-cloak]{
+            display: none;
+        }
+        .submit-comment{
+            height: 250px;
+            width: 800px;
+            margin: 0 auto;
+            background-color: #d9edf7;
+            padding: 20px 25px;
+            border: #a5bcff solid 1px;
+        }
+        .comment-list{
+            height: auto;
+            width: 800px;
+            margin-right: auto;
+            margin-left: auto;
+            margin-top: 25px;
+            border: #a5bcff solid 1px;
+        }
+        textarea{
+            width: 750px;
+            height: 150px;
+            border: 1px solid #636c72;
+            box-shadow:inset 0 0 5px 2px #a1a3b0;
+        }
+        .submit-comment-action{
+            padding-top: 10px;
+            height: 50px;
+            width: 750px;
+        }
+        .submit-comment-action span{
+            display: inline-block;
+            width: 150px;
+            float: right;
+            text-align: center;
+            padding: 10px;
+        }
+        .submit-comment-action input{
+            display: inline-block;
+            float: right;
+        }
+        .nomess{
+            padding: 5px;
+            height: 40px;
+            text-align: center;
+        }
+        .messlist{
+            font-family: "Microsoft YaHei UI";
+            font-weight: 300;
+        }
+        .reply{
+            border-bottom: 1px solid #8d92a0;
+        }
+        .replyContent{
+            padding: 10px;
+        }
+        .operation{
+            padding: 10px;
+        }
+        .operation .time{
+            display: inline-block;
+            float: left;
+        }
+        .operation .handle{
+            float: right;
+        }
+        .handle a{
+            text-decoration: none;
+            display: inline-block;
+            padding-right: 5px;
+        }
+        .page{
+            background-color: #f3f8fd;
+            clear: right;
+            height: 50px;
+            padding: 5px;
+        }
+        .pagination{
+            margin: 0;
+            padding: 0;
+            float: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row submit-comment">
+            <textarea name="content" id=""  rows="10" v-model="content"></textarea>
+            <div class="submit-comment-action">
+                <input type="button" class="btn btn-success" value="提交" @click="add">
+                <span class="text-muted">(可按Enter 回复)</span>
+            </div>
+        </div>
+        <div class="comment-list">
+            <div class="nomess text-muted" v-show="msgData.length==0"><h5>暂无留言</h5></div>
+            <div class="messlist">
+                <div class="reply" v-for="item in msgData" v-cloak>
+                    <p class="replyContent">{{item.content}}</p>
+                    <p class="operation">
+                        <span class="time">{{item.time}}</span>
+                        <span class="handle">
+                            <a href="javascript:;" class="fa fa-thumbs-o-up">{{item.acc}}</a>
+                            <a href="javascript:;" class="text-danger fa fa-thumbs-o-down">{{item.ref}}</a>
+                            <a href="javascript:;" class="fa fa-trash"></a>
+                        </span>
+                    </p>
+                </div>
+            </div>
+            <div class="page">
+                <ul class="pagination">
+                    <li class="page-item"><a href="" class="page-link">1</a></li>
+                    <li class="page-item"><a href="" class="page-link">2</a></li>
+                    <li class="page-item"><a href="" class="page-link">3</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+<script src="js/jquery-3.2.1.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/vue.js"></script>
+<script src="js/vue-resource.js"></script>
+<script>
+    window.onload=function () {
+        new Vue({
+            el:'.container',
+            data:{
+                content:'',
+                msgData:[]
+            },
+            methods:{
+                add:function () {
+                    this.$http({
+                        url:'weibo.php',
+                        data:{//给后台发送的数据
+                            act:'add',
+                            content:this.content
+                        }
+                    }).then(function (res) {
+                        //console.log(res.data)
+                        var json=res.data;
+                        console.log(json);
+                        //msgData添加数据
+                        this.msgData.unshift({
+                            content:this.content,
+                            time:json.time,
+                            acc:0,
+                            ref:0,
+                            id:json.id
+                        });
+                        this.content='';
+                    });
+                },
+                getPageData:function (n) {
+                    this.$http({
+                        url:'weibo.php',
+                        data:{
+                            act:'get',
+                            page:n
+                        }
+                    }).then(function (res) {
+                        console.log(res.data);
+                        var arr=res.data;
+                        for(var i=0;i<arr.length;i++){
+                            this.msgData.push({
+                                content:arr[i].content,
+                                time:arr[i].time,
+                                acc:arr[i].acc,
+                                ref:arr[i].ref,
+                                id:arr[i].id
+                            });
+                        }
+                    });
+                }
+            },
+            created:function () {
+                this.getPageData(1);
+            }
+        });
+    };
+</script>
+</body>
+</html>
