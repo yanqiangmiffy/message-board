@@ -1,8 +1,8 @@
 <?php
 /*
 **********************************************
-	Author:	blue@zhinengshe.com
-	Date:	2012-4-5
+	Author:	quincyqiang
+	Date:	2017/6/22
 
 	usage:
 			weibo.php?act=add&content=xxx	添加一条
