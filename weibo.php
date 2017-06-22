@@ -23,7 +23,7 @@
 	注意：	服务器所返回的时间戳都是秒（JS是毫秒）
 **********************************************
 */
-$conn=mysqli_connect('localhost','root','root','test','3306');
+$conn=mysqli_connect('localhost','root','','test','3306');
 mysqli_query($conn,"set names 'utf8'");
 $sql= "CREATE TABLE  weibo (
 ID INT(6) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
@@ -33,11 +33,10 @@ acc INT(8) NOT NULL ,
 ref INT(8) NOT NULL
 ) CHARACTER SET utf8 COLLATE utf8_general_ci";
 
-
-
+mysqli_query($conn,$sql);
 //接口开始
 $act=$_GET['act'];
-$PAGE_SIZE=6;
+$PAGE_SIZE=3;
 switch ($act){
 	case 'add':
 		$content=urldecode($_GET['content']);//将编码的中文还原

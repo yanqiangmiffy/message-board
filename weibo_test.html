@@ -13,7 +13,7 @@
     </div>
     <div class="container" id="app">
         <div class="row submit-comment">
-            <textarea name="content" id=""  rows="10" v-model="content"></textarea>
+            <textarea name="content" id=""  rows="10" v-model="content" @keydown.enter="add"></textarea>
             <div class="submit-comment-action">
                 <input type="button" class="btn btn-success" value="提交" @click="add">
                 <span class="text-muted">(可按Enter 回复)</span>
@@ -36,9 +36,11 @@
             </div>
             <div class="page">
                 <ul class="pagination">
-                    <li class="page-item"><a href="" class="page-link">1</a></li>
-                    <li class="page-item"><a href="" class="page-link">2</a></li>
-                    <li class="page-item"><a href="" class="page-link">3</a></li>
+                    <li class="page-item"><a href="javascript:;" class="page-link"><</a></li>
+                    <li class="page-item"><a href="javascript:;" class="page-link">1</a></li>
+                    <li class="page-item"><a href="javascript:;" class="page-link">2</a></li>
+                    <li class="page-item"><a href="javascript:;" class="page-link">3</a></li>
+                    <li class="page-item"><a href="javascript:;" class="page-link">></a></li>
                 </ul>
             </div>
         </div>
@@ -152,6 +154,9 @@
                     }).then(function () {
                         this.msgData.splice(nowIndex,1);
                     });
+                },
+                send:function () {
+                    alert(1);
                 }
             },
             created:function () {
